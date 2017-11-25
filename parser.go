@@ -8,7 +8,7 @@ import (
 
 var (
 	headRe  = regexp.MustCompile(`^(#{1,6})\s*(.*)$`)
-	listRe  = regexp.MustCompile(`^\s*[\-\+\*]\s+(.*)$`)
+	listRe  = regexp.MustCompile(`^(\s{0,3})[\-\+\*]\s+(.*)$`)
 	emptyRe = regexp.MustCompile(`^\s*$`)
 )
 
@@ -46,6 +46,52 @@ func (p *Parser) Head() (*Element, bool) {
 		Name:     fmt.Sprintf("h%d", len(m[1])),
 		Children: []Ast{&Inline{Value: m[2]}},
 	}, true
+}
+
+func (p *Parser) UList(indent int) (*Element, bool) {
+	c := []Ast{}
+	i := indent
+	for {
+		var it *Element
+		var ok bool
+		it, i, ok = p.UItem(i)
+		if !ok {
+			break
+		}
+		c = append(c, it)
+	}
+	if len(c) <= 0 {
+		return nil, false
+	}
+	return &Element{
+		Name:     "ul",
+		Children: c,
+	}, true
+}
+
+func (p *Parser) UItem(indent int) (*Element, int, bool) {
+	if p.End() || !p.Match(listRe) {
+		return nil, 0, false
+	}
+	c := []Ast{}
+	m := listRe.FindStringSubmatch(p.Peek())
+	i := len(m[1])
+	if i < indent {
+		return nil, 0, false
+	}
+	c = append(c, &Inline{Value: m[2]})
+	p.Inc()
+	for {
+		l, ok := p.UList(i + 1)
+		if !ok {
+			break
+		}
+		c = append(c, l)
+	}
+	return &Element{
+		Name:     "li",
+		Children: c,
+	}, i, true
 }
 
 func (p *Parser) End() bool {

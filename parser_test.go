@@ -126,4 +126,96 @@ var _ = Describe("Parser", func() {
 			Expect(p.Pos).To(Equal(1))
 		})
 	})
+
+	Describe("UList()", func() {
+		var p *Parser
+
+		doParseUList := func(lines []string) (*Element, bool) {
+			p = &Parser{Lines: lines}
+			return p.UList(-1)
+		}
+
+		It("parses flat items", func() {
+			got, ok := doParseUList([]string{
+				"+ hello0",
+				"- hello1",
+				"* hello2",
+			})
+			Expect(ok).To(BeTrue())
+			Expect(got).To(Equal(&Element{
+				Name: "ul",
+				Children: []Ast{
+					&Element{
+						Name: "li",
+						Children: []Ast{
+							&Inline{Value: "hello0"},
+						},
+					},
+					&Element{
+						Name: "li",
+						Children: []Ast{
+							&Inline{Value: "hello1"},
+						},
+					},
+					&Element{
+						Name: "li",
+						Children: []Ast{
+							&Inline{Value: "hello2"},
+						},
+					},
+				},
+			}))
+			Expect(p.Pos).To(Equal(3))
+		})
+
+		It("parses nested items", func() {
+			got, ok := doParseUList([]string{
+				"- hello0",
+				"  - hello00",
+				"- hello1",
+				"  - hello10",
+			})
+			Expect(ok).To(BeTrue())
+			Expect(got).To(Equal(&Element{
+				Name: "ul",
+				Children: []Ast{
+					&Element{
+						Name: "li",
+						Children: []Ast{
+							&Inline{Value: "hello0"},
+							&Element{
+								Name: "ul",
+								Children: []Ast{
+									&Element{
+										Name: "li",
+										Children: []Ast{
+											&Inline{Value: "hello00"},
+										},
+									},
+								},
+							},
+						},
+					},
+					&Element{
+						Name: "li",
+						Children: []Ast{
+							&Inline{Value: "hello1"},
+							&Element{
+								Name: "ul",
+								Children: []Ast{
+									&Element{
+										Name: "li",
+										Children: []Ast{
+											&Inline{Value: "hello10"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			}))
+			Expect(p.Pos).To(Equal(4))
+		})
+	})
 })
