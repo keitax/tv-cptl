@@ -7,12 +7,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Parser", func() {
+var _ = Describe("BlockParser", func() {
 	Describe("Paragraph()", func() {
-		var p *Parser
+		var p *BlockParser
 
 		doParseParagraph := func(lines []string) (*Element, bool) {
-			p = &Parser{Lines: lines}
+			p = &BlockParser{Lines: lines}
 			return p.Paragraph()
 		}
 
@@ -83,10 +83,10 @@ var _ = Describe("Parser", func() {
 	})
 
 	Describe("Head()", func() {
-		var p *Parser
+		var p *BlockParser
 
 		doParseHead := func(lines []string) (*Element, bool) {
-			p = &Parser{Lines: lines}
+			p = &BlockParser{Lines: lines}
 			return p.Head()
 		}
 
@@ -128,10 +128,10 @@ var _ = Describe("Parser", func() {
 	})
 
 	Describe("UList()", func() {
-		var p *Parser
+		var p *BlockParser
 
 		doParseUList := func(lines []string) (*Element, bool) {
-			p = &Parser{Lines: lines}
+			p = &BlockParser{Lines: lines}
 			return p.UList(-1)
 		}
 

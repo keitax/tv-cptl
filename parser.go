@@ -16,12 +16,12 @@ func ParseLines() []Element {
 	return nil
 }
 
-type Parser struct {
+type BlockParser struct {
 	Pos   int
 	Lines []string
 }
 
-func (p *Parser) Paragraph() (*Element, bool) {
+func (p *BlockParser) Paragraph() (*Element, bool) {
 	ls := []string{}
 	for !(p.End() || p.Match(headRe) || p.Match(listRe) || p.Match(emptyRe)) {
 		ls = append(ls, p.Peek())
@@ -36,7 +36,7 @@ func (p *Parser) Paragraph() (*Element, bool) {
 	}, true
 }
 
-func (p *Parser) Head() (*Element, bool) {
+func (p *BlockParser) Head() (*Element, bool) {
 	if p.End() || !p.Match(headRe) {
 		return nil, false
 	}
@@ -48,7 +48,7 @@ func (p *Parser) Head() (*Element, bool) {
 	}, true
 }
 
-func (p *Parser) UList(indent int) (*Element, bool) {
+func (p *BlockParser) UList(indent int) (*Element, bool) {
 	c := []Ast{}
 	i := indent
 	for {
@@ -69,7 +69,7 @@ func (p *Parser) UList(indent int) (*Element, bool) {
 	}, true
 }
 
-func (p *Parser) UItem(indent int) (*Element, int, bool) {
+func (p *BlockParser) UItem(indent int) (*Element, int, bool) {
 	if p.End() || !p.Match(listRe) {
 		return nil, 0, false
 	}
@@ -94,18 +94,18 @@ func (p *Parser) UItem(indent int) (*Element, int, bool) {
 	}, i, true
 }
 
-func (p *Parser) End() bool {
+func (p *BlockParser) End() bool {
 	return p.Pos >= len(p.Lines)
 }
 
-func (p *Parser) Peek() string {
+func (p *BlockParser) Peek() string {
 	return p.Lines[p.Pos]
 }
 
-func (p *Parser) Inc() {
+func (p *BlockParser) Inc() {
 	p.Pos++
 }
 
-func (p *Parser) Match(r *regexp.Regexp) bool {
+func (p *BlockParser) Match(r *regexp.Regexp) bool {
 	return !p.End() && r.MatchString(p.Peek())
 }
