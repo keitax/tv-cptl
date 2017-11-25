@@ -1,12 +1,13 @@
 package tvcptl
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
 
 var (
-	headRe  = regexp.MustCompile(`^#{1,6}\s*(.*)$`)
+	headRe  = regexp.MustCompile(`^(#{1,6})\s*(.*)$`)
 	listRe  = regexp.MustCompile(`^\s*[\-\+\*]\s+(.*)$`)
 	emptyRe = regexp.MustCompile(`^\s*$`)
 )
@@ -32,6 +33,17 @@ func (p *Parser) Paragraph() (*Element, bool) {
 	return &Element{
 		Name:     "p",
 		Children: []Ast{&Inline{Value: strings.Join(ls, "\n")}},
+	}, true
+}
+
+func (p *Parser) Head() (*Element, bool) {
+	if p.End() || !p.Match(headRe) {
+		return nil, false
+	}
+	m := headRe.FindStringSubmatch(p.Peek())
+	return &Element{
+		Name:     fmt.Sprintf("h%d", len(m[1])),
+		Children: []Ast{&Inline{Value: m[2]}},
 	}, true
 }
 

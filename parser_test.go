@@ -61,4 +61,44 @@ var _ = Describe("Parser", func() {
 			Expect(got).To(BeNil())
 		})
 	})
+
+	Describe("Head()", func() {
+		doParseHead := func(lines []string) (*Element, bool) {
+			p := &Parser{Lines: lines}
+			return p.Head()
+		}
+
+		It("parses h1 line", func() {
+			got, ok := doParseHead([]string{
+				"# hello",
+			})
+			Expect(ok).To(BeTrue())
+			Expect(got).To(Equal(&Element{
+				Name:     "h1",
+				Children: []Ast{&Inline{Value: "hello"}},
+			}))
+		})
+
+		It("parses h6 line", func() {
+			got, ok := doParseHead([]string{
+				"###### hello",
+			})
+			Expect(ok).To(BeTrue())
+			Expect(got).To(Equal(&Element{
+				Name:     "h6",
+				Children: []Ast{&Inline{Value: "hello"}},
+			}))
+		})
+
+		It("doesn't parse h7 line", func() {
+			got, ok := doParseHead([]string{
+				"####### hello",
+			})
+			Expect(ok).To(BeTrue())
+			Expect(got).To(Equal(&Element{
+				Name:     "h6",
+				Children: []Ast{&Inline{Value: "# hello"}},
+			}))
+		})
+	})
 })
