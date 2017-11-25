@@ -41,6 +41,7 @@ func (p *Parser) Head() (*Element, bool) {
 		return nil, false
 	}
 	m := headRe.FindStringSubmatch(p.Peek())
+	p.Inc()
 	return &Element{
 		Name:     fmt.Sprintf("h%d", len(m[1])),
 		Children: []Ast{&Inline{Value: m[2]}},
