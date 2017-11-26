@@ -9,11 +9,12 @@ import (
 var (
 	headRe  = regexp.MustCompile(`^(#{1,6})\s*(.*)$`)
 	listRe  = regexp.MustCompile(`^(\s{0,3})[\-\+\*]\s+(.*)$`)
-	emptyRe = regexp.MustCompile(`^\s*$`)
+	blankRe = regexp.MustCompile(`^\s*$`)
 )
 
-func ParseLines() []Element {
-	return nil
+func ParseBlocks(text string) []*Element {
+	p := &BlockParser{Lines: strings.Split(text, "\n")}
+	return p.Blocks()
 }
 
 type BlockParser struct {
@@ -21,9 +22,32 @@ type BlockParser struct {
 	Lines []string
 }
 
+func (p *BlockParser) Blocks() []*Element {
+	b := []*Element{}
+	for !p.End() {
+		e, ok := p.Paragraph()
+		if ok {
+			b = append(b, e)
+			continue
+		}
+		e, ok = p.Head()
+		if ok {
+			b = append(b, e)
+			continue
+		}
+		e, ok = p.UList(-1)
+		if ok {
+			b = append(b, e)
+			continue
+		}
+		p.Blank()
+	}
+	return b
+}
+
 func (p *BlockParser) Paragraph() (*Element, bool) {
 	ls := []string{}
-	for !(p.End() || p.Match(headRe) || p.Match(listRe) || p.Match(emptyRe)) {
+	for !(p.End() || p.Match(headRe) || p.Match(listRe) || p.Match(blankRe)) {
 		ls = append(ls, p.Peek())
 		p.Inc()
 	}
@@ -92,6 +116,15 @@ func (p *BlockParser) UItem(indent int) (*Element, int, bool) {
 		Name:     "li",
 		Children: c,
 	}, i, true
+}
+
+func (p *BlockParser) Blank() {
+	if p.End() {
+		return
+	}
+	if p.Match(blankRe) {
+		p.Inc()
+	}
 }
 
 func (p *BlockParser) End() bool {

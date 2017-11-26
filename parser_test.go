@@ -7,6 +7,47 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+var _ = Describe("ParseBlocks()", func() {
+	It("parses block markups", func() {
+		got := ParseBlocks(`# h1
+## h2
+
+- a
+- b
+
+p`)
+		Expect(got).To(Equal([]*Element{
+			&Element{
+				Name:     "h1",
+				Children: []Ast{&Inline{Value: "h1"}},
+			},
+			&Element{
+				Name:     "h2",
+				Children: []Ast{&Inline{Value: "h2"}},
+			},
+			&Element{
+				Name: "ul",
+				Children: []Ast{
+					&Element{
+						Name:     "li",
+						Children: []Ast{&Inline{Value: "a"}},
+					},
+					&Element{
+						Name:     "li",
+						Children: []Ast{&Inline{Value: "b"}},
+					},
+				},
+			},
+			&Element{
+				Name: "p",
+				Children: []Ast{
+					&Inline{Value: "p"},
+				},
+			},
+		}))
+	})
+})
+
 var _ = Describe("BlockParser", func() {
 	Describe("Paragraph()", func() {
 		var p *BlockParser
