@@ -12,7 +12,7 @@ var (
 	blankRe = regexp.MustCompile(`^\s*$`)
 )
 
-func ParseBlocks(text string) []*Element {
+func ParseBlocks(text string) []Ast {
 	p := &BlockParser{Lines: strings.Split(text, "\n")}
 	return p.Blocks()
 }
@@ -22,8 +22,8 @@ type BlockParser struct {
 	Lines []string
 }
 
-func (p *BlockParser) Blocks() []*Element {
-	b := []*Element{}
+func (p *BlockParser) Blocks() []Ast {
+	b := []Ast{}
 	for !p.End() {
 		e, ok := p.Paragraph()
 		if ok {
@@ -45,7 +45,7 @@ func (p *BlockParser) Blocks() []*Element {
 	return b
 }
 
-func (p *BlockParser) Paragraph() (*Element, bool) {
+func (p *BlockParser) Paragraph() (Ast, bool) {
 	ls := []string{}
 	for !(p.End() || p.Match(headRe) || p.Match(listRe) || p.Match(blankRe)) {
 		ls = append(ls, p.Peek())
@@ -60,7 +60,7 @@ func (p *BlockParser) Paragraph() (*Element, bool) {
 	}, true
 }
 
-func (p *BlockParser) Head() (*Element, bool) {
+func (p *BlockParser) Head() (Ast, bool) {
 	if p.End() || !p.Match(headRe) {
 		return nil, false
 	}
@@ -72,11 +72,11 @@ func (p *BlockParser) Head() (*Element, bool) {
 	}, true
 }
 
-func (p *BlockParser) UList(indent int) (*Element, bool) {
+func (p *BlockParser) UList(indent int) (Ast, bool) {
 	c := []Ast{}
 	i := indent
 	for {
-		var it *Element
+		var it Ast
 		var ok bool
 		it, i, ok = p.UItem(i)
 		if !ok {
@@ -93,7 +93,7 @@ func (p *BlockParser) UList(indent int) (*Element, bool) {
 	}, true
 }
 
-func (p *BlockParser) UItem(indent int) (*Element, int, bool) {
+func (p *BlockParser) UItem(indent int) (Ast, int, bool) {
 	if p.End() || !p.Match(listRe) {
 		return nil, 0, false
 	}

@@ -16,7 +16,7 @@ var _ = Describe("ParseBlocks()", func() {
 - b
 
 p`)
-		Expect(got).To(Equal([]*Element{
+		Expect(got).To(Equal([]Ast{
 			&Element{
 				Name:     "h1",
 				Children: []Ast{&Inline{Value: "h1"}},
@@ -52,7 +52,7 @@ var _ = Describe("BlockParser", func() {
 	Describe("Paragraph()", func() {
 		var p *BlockParser
 
-		doParseParagraph := func(lines []string) (*Element, bool) {
+		doParseParagraph := func(lines []string) (Ast, bool) {
 			p = &BlockParser{Lines: lines}
 			return p.Paragraph()
 		}
@@ -126,7 +126,7 @@ var _ = Describe("BlockParser", func() {
 	Describe("Head()", func() {
 		var p *BlockParser
 
-		doParseHead := func(lines []string) (*Element, bool) {
+		doParseHead := func(lines []string) (Ast, bool) {
 			p = &BlockParser{Lines: lines}
 			return p.Head()
 		}
@@ -171,7 +171,7 @@ var _ = Describe("BlockParser", func() {
 	Describe("UList()", func() {
 		var p *BlockParser
 
-		doParseUList := func(lines []string) (*Element, bool) {
+		doParseUList := func(lines []string) (Ast, bool) {
 			p = &BlockParser{Lines: lines}
 			return p.UList(-1)
 		}
